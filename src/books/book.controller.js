@@ -1,8 +1,8 @@
 import prisma from "../../prisma/prismaClient.js";
 
-export const getBooks = async (req,res) =>{
+export const getAllBooks = async (req,res) =>{
     try{
-        const books = await prisma.book.findMany();
+        const books = await prisma.book.findMany({include: { author: { select: { firstName: true, lastName: true } } }});
         res.json(books);
     }catch (error){
         res.status(500).json({error: 'Error al obtener libros'});
@@ -12,7 +12,10 @@ export const getBooks = async (req,res) =>{
 export const getBook = async (req,res) =>{
     try{
         const id = parseInt(req.params.id);
-        const book = await prisma.book.findUniqueOrThrow({where:{id}})
+        const book = await prisma.book.findUniqueOrThrow({
+        where:{id},
+        include: { author: { select: { firstName: true, lastName: true } } }
+    })
         res.json(book);
     }catch (error){
         res.status(500).json({error: 'Error al obtener el libro'});
@@ -21,12 +24,14 @@ export const getBook = async (req,res) =>{
 
 export const createBook = async (req,res) => {
     try {
-        const {title, year, publisher} = req.body
+        const {title, year, publisher, authorID} = req.body
+
         const book = await prisma.book.create({
             data: {
             title,
             year,
-            publisher
+            publisher,
+            authorID
         }});
         res.status(201).json(book);
     } catch (error) {
@@ -40,7 +45,8 @@ export const updateBook = async (req,res) => {
     try {
         const bookUpdate = await prisma.book.update({
             where: {id}, 
-            data:  {title}
+            data:  {title},
+            include: { author: { select: { firstName: true, lastName: true } } }
         });
         if(!bookUpdate){
             throw new Error();
@@ -54,7 +60,11 @@ export const updateBook = async (req,res) => {
 export const deleteBook = async (req,res) =>{
     const id = parseInt(req.params.id);
     try {
-        const bookDelete = await prisma.book.delete({where:{id}});
+        const bookDelete = await prisma.book.delete({
+        where:{id},
+        include: { author: { select: { firstName: true, lastName: true } } }
+    
+    });
         res.json(bookDelete);
     } catch (error) {
         res.status(204).json({error: 'Error al borrar libro'});
