@@ -42,10 +42,10 @@ export const updateAuthor = async (req,res) => {
         const authorUpdate = await prisma.author.update({
             where: {id}, 
             data:  {
-                firstName,
-                lastName,
-                nationality,
-                dateOfBirth: new Date(dateOfBirth)
+                ...(firstName && {firstName}),
+                ...(lastName &&  {lastName}),
+                ...(nationality && {nationality}),
+                ...(dateOfBirth && {dateOfBirth: new Date(dateOfBirth)})
             }
         });
         if(!authorUpdate){
