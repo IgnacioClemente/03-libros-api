@@ -43,6 +43,6 @@ model User{
   email        String @unique
   createAt     DateTime @default(now())
   updatedAt    DateTime? @updatedAt
-  Active       Boolean @default(true)
   password     String
+  deletedAt    DateTime?
 }

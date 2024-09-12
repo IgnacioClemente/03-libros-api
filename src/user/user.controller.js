@@ -2,7 +2,13 @@ import prisma from "../../prisma/prismaClient.js";
 
 export const getAllUsers = async (req,res) =>{
     try{
-        const user = await prisma.user.findMany();
+        const user = await prisma.user.findMany({
+        select:{
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true
+        }});
         res.json(user);
     }catch (error){
         res.status(500).json({error: 'Error al obtener el usuario'});
@@ -12,7 +18,17 @@ export const getAllUsers = async (req,res) =>{
 export const getUserById = async (req,res) =>{
     try{
         const id = parseInt(req.params.id);
-        const user = await prisma.user.findUniqueOrThrow({where:{id}})
+        const user = await prisma.user.findUniqueOrThrow({
+        select:{
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        deletedAt: true,
+        updatedAt: true,
+        createAt: true
+    },
+        where:{id}})
         res.json(user);
     }catch (error){
         res.status(500).json({error: 'Error al obtener el usuario'});
@@ -59,7 +75,10 @@ export const updateUser = async (req,res) => {
 export const deleteUser = async (req,res) =>{
     const id = parseInt(req.params.id);
     try {
-        const userDelete = await prisma.user.delete({where:{id}});
+        const userDelete = await prisma.user.update({
+        where:{id},
+        data: {deletedAt: new Date()}
+    });
         res.json(userDelete);
     } catch (error) {
         res.status(204).json({error: 'Error al borrar el usuario'});
