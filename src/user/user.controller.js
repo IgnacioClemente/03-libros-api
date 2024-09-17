@@ -1,17 +1,20 @@
 import prisma from "../../prisma/prismaClient.js";
+import bcrypt from 'bcryptjs'
 
 export const getAllUsers = async (req,res) =>{
     try{
-        const user = await prisma.user.findMany({
+        const users = await prisma.user.findMany({
         select:{
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true
-        }});
-        res.json(user);
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true
+        },
+        where: {deletedAt:null}
+    });
+    res.status(200).json(users);
     }catch (error){
-        res.status(500).json({error: 'Error al obtener el usuario'});
+        res.status(500).json({ msg: 'Error al obtener los usuarios' });
     }
 };
 
@@ -20,16 +23,22 @@ export const getUserById = async (req,res) =>{
         const id = parseInt(req.params.id);
         const user = await prisma.user.findUniqueOrThrow({
         select:{
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        deletedAt: true,
-        updatedAt: true,
-        createAt: true
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            deletedAt: true,
+            updatedAt: true,
+            createAt: true
     },
-        where:{id}})
-        res.json(user);
+        where:{id, deletedAt: null}
+    });
+    if(!user){
+        return res
+        .status(404)
+        .json({ msg: 'No se encontro al usuario ingresado' });
+    }
+    res.status(200).json(user);
     }catch (error){
         res.status(500).json({error: 'Error al obtener el usuario'});
     }
@@ -38,12 +47,13 @@ export const getUserById = async (req,res) =>{
 export const createUser = async (req,res) => {
     try {
         const {firstName, lastName, email, password} = req.body
+        const passwordBcrypt = await bcrypt.hash(password, 10);
         const user = await prisma.user.create({
             data: {
             firstName: firstName.toLowerCase(),
             lastName: lastName.toLowerCase(),
             email: email.toLowerCase(),
-            password
+            password: passwordBcrypt
         }});
         res.status(201).json(user);
     } catch (error) {
@@ -52,45 +62,60 @@ export const createUser = async (req,res) => {
 };
 
 export const updateUser = async (req,res) => {
-    const id = parseInt(req.params.id);
-    const {firstName, lastName, password} = req.body
     try {
+        const id = parseInt(req.params.id);
+        if (!existUser(id)) {
+			return res.status(404).json({ msg: 'Usuario no encontrado' });
+		}
+        const {firstName, lastName, password} = req.body
+        const passwordBcrypt = await bcrypt.hash(password, 10);
         const userUpdate = await prisma.user.update({
             where: {id}, 
             data:  {
-                ...(firstName && {firstName}),
-                ...(lastName &&  {lastName}),
-                ...(password && {password}),
+                ...(firstName && {firstName: firstName.toLowerCase()}),
+                ...(lastName &&  {lastName: lastName.toLowerCase()}),
+                ...(password && {password: passwordBcrypt}),
             }
         });
         if(!userUpdate){
-            throw new Error();
+            return res.status(404).json({ msg: 'Usuario no encontrado' });
         }
         res.json(userUpdate);
     } catch (error) {
-        res.status(500).json({error: 'Error al actualizar usuario'});
+        res.status(500).json({ msg: 'Error al actualizar el usuario' });
     }
 };
 
 export const deleteUser = async (req,res) =>{
-    const id = parseInt(req.params.id);
     try {
+        const id = parseInt(req.params.id);
+        const userCheck = await existUser(id);
+
+        if (!userCheck) {
+        return res.status(404).json({ msg: 'Usuario no encontrado' });
+        }
+
         const userDelete = await prisma.user.update({
         where:{id},
         data: {deletedAt: new Date()}
     });
-        res.json(userDelete);
+		res.status(200).json({ msg: 'Usuario eliminado con éxito' });
     } catch (error) {
         res.status(204).json({error: 'Error al borrar el usuario'});
     }
 };
 
-export const getUserByName = async (req,res) =>{
+export const existUser = async (id) => {
     try{
-        const email = parseInt(req.params.email);
-        const user = await prisma.user.findUniqueOrThrow({where:{email}})
-        res.json(user);
-    }catch (error){
-        res.status(500).json({error: 'Error al obtener el usuario'});
+        const existUser = await prisma.user.findUnique({
+            where: {id, deletedAt: null}
+        });
+
+        if(!existUser){
+            return false;
+        }
+        return true;
+    }catch(error){
+        return false;
     }
 };
