@@ -2,7 +2,7 @@ import prisma from "../../prisma/prismaClient.js";
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken';
 
-export const loginLocalUser = async () =>{
+export const loginLocalUser = async (email, password) =>{
         const user = await prisma.user.findUniqueOrThrow({
             where:{
                 email, 
