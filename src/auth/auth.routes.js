@@ -1,8 +1,8 @@
 import express from 'express';
-import {loginLocalUser} from './auth.controller.js';
+import {loginLocalUserController} from './auth.controller.js';
 
 const router = express.Router();
 
-router.post('/login', loginLocalUser);
+router.post('/login', loginLocalUserController);
 
 export default router;

@@ -1,12 +1,12 @@
 import express from 'express';
-import { createAuthor, deleteAuthor, getAuthor, getAuthors, updateAuthor } from './author.controller.js';
+import { createAuthorController, deleteAuthorController, getAuthorController, getAuthorsController, updateAuthorController } from './author.controller.js';
 
 const router = express.Router();
 
-router.get('/author', getAuthors);
-router.get('/author/:id', getAuthor);
-router.post('/author', createAuthor);
-router.patch('/author/:id', updateAuthor);
-router.delete('/author/:id', deleteAuthor);
+router.get('/author', getAuthorsController);
+router.get('/author/:id', getAuthorController);
+router.post('/author', createAuthorController);
+router.patch('/author/:id', updateAuthorController);
+router.delete('/author/:id', deleteAuthorController);
 
 export default router;
