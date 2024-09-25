@@ -13,8 +13,8 @@ export const loginLocalUser = async (email, password) =>{
         if(!passwordCheck){
             throw new Error();
         }
-        const accessToken = jwt.sign({ email: user.email}, 'mipassword01', {
-            expiresIn: '1h'
+        const accessToken = jwt.sign({ email: user.email}, APIBOOK_JWT_PASSWORD, {
+            expiresIn: process.env.APIBOOK_JWT_TIME
         });
         return accessToken;     
 }

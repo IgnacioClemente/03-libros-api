@@ -5,7 +5,7 @@ import userRoutes from './src/user/user.routes.js'
 import authRoutes from './src/auth/auth.routes.js'
 
 const app = express();
-const port = 3000;
+const port = parseInt(process.env.APIBOOK_PORT);
 
 app.use(express.json());
 
