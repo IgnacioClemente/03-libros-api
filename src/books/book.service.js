@@ -1,4 +1,5 @@
 import prisma from "../../prisma/prismaClient.js";
+import { getUserByEmail } from "../user/user.service.js";
 
 export const getAllBooks = async () => {
     const books = await prisma.book.findMany({
@@ -13,20 +14,23 @@ export const getAllBooks = async () => {
 export const getBook = async (id) => {
     const book = await prisma.book.findUniqueOrThrow({
     where:{id},
-    include: { author: { select: { firstName: true, lastName: true } } }
+    include: { author: { select: { firstName: true, lastName: true } },
+    user: { select: { email: true } }
+    }
 });
     return book
 }
 
 export const createBook = async (book) => {
 	const { title, year, publisher, authorID } = book;
-
-	const create_book = await prisma.book.create({
+    const user = await getUserByEmail(email);
+    const create_book = await prisma.book.create({
 		data: {
 			title,
 			year,
 			publisher,
-			authorID
+			authorID,
+            userId: user.id
 		}
 	});
 

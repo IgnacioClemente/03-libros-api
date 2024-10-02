@@ -69,3 +69,8 @@ export const deleteUser = async (id) =>{
     });
     return userDelete;
 }
+
+export const getUserByEmail = async (email) =>{
+    const user = await prisma.user.findUniqueOrThrow({where:{email}})
+    return user;
+}
