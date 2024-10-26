@@ -1,5 +1,6 @@
 import prisma from "../../prisma/prismaClient.js";
 import { getUserByEmail } from "../user/user.service.js";
+import { createBookSchema, updateBookSchema } from "./book.validator.js";
 
 export const getAllBooks = async () => {
     const books = await prisma.book.findMany({
@@ -23,6 +24,10 @@ export const getBook = async (id) => {
 
 export const createBook = async (book) => {
 	const { title, year, publisher, authorID } = book;
+    const {error} = createBookSchema.validate(book, { abortEarly: false });
+    if(error){
+        throw new Error(error.message);
+    }
     const user = await getUserByEmail(email);
     const create_book = await prisma.book.create({
 		data: {
@@ -38,10 +43,20 @@ export const createBook = async (book) => {
 };
 
 
-export const updateBook = async (id,title) =>{
+export const updateBook = async (id,book) =>{
+    const { title, year, publisher, authorID } = book;
+    const { error } = updateBookSchema.validate(book,{ abortEarly: false });
+    if (error) {
+        const errors = error.details.map((e) => e.message);
+        throw new Error(errors);
+    }
         const bookUpdate = await prisma.book.update({
             where: {id}, 
-            data:  {title},
+            data:  {
+                title,
+                year,
+                publisher
+            },
             include: { author: { select: { firstName: true, lastName: true } } }
         });
 

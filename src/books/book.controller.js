@@ -32,8 +32,7 @@ export const createBookController = async (req,res) => {
 export const updateBookController = async (req,res) => {
     try {
         const id = parseInt(req.params.id);
-        const title = req.body.title;
-        const book = await updateBook(id,title)
+        const book = await updateBook(id,req.body)
         res.json(book);
     } catch (error) {
         res.status(500).json({error: 'Error al actualizar'});

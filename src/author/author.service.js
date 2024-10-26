@@ -1,4 +1,5 @@
 import prisma from "../../prisma/prismaClient.js";
+import { createAuthorSchema, updateAuthorSchema } from "./author.validator.js";
 
 export const getAuthors = async () => {
     const author = await prisma.author.findMany();
@@ -12,6 +13,10 @@ export const getAuthor = async (id) => {
 
 export const createAuthor = async (author) =>{
     const {firstName, lastName, nationality, dateOfBirth} = author;
+    const {error} = createAuthorSchema.validate(author, { abortEarly: false });
+    if(error){
+        throw new Error(error.message);
+    }
     const author_Create = await prisma.author.create({
         data: {
         firstName,
@@ -24,6 +29,7 @@ export const createAuthor = async (author) =>{
 
 export const updateAuthor = async (id, author) => {
     const {firstName, lastName, nationality,dateOfBirth} = author;
+    const {error} = updateAuthorSchema.validate(author, { abortEarly: false });
     const authorUpdate = await prisma.author.update({
         where: {id}, 
         data:  {
